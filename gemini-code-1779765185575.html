@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Invitation ✨</title>
+    <style>
+        :root {
+            --primary: #ff6b81;
+            --primary-hover: #ff4757;
+            --bg: #fff5f6;
+            --card-bg: #ffffff;
+            --text: #2f3542;
+            --text-light: #747d8c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(255, 107, 129, 0.15);
+            text-align: center;
+            transition: all 0.4s ease;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            color: var(--text-light);
+            margin-bottom: 30px;
+            font-size: 1.05rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        input[type="date"],
+        input[type="time"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #f1f2f6;
+            border-radius: 12px;
+            font-size: 1rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="date"]:focus,
+        input[type="time"]:focus {
+            border-color: var(--primary);
+        }
+
+        /* Cuisine Grid Layout */
+        .cuisine-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .cuisine-option {
+            position: relative;
+        }
+
+        .cuisine-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .cuisine-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 10px;
+            background: #f8f9fa;
+            border: 2px solid #f1f2f6;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .cuisine-card .emoji {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .cuisine-card .name {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        /* Hover & Checked States */
+        .cuisine-option:hover .cuisine-card {
+            border-color: #ffe0e6;
+            background: #fff8f9;
+            transform: translateY(-2px);
+        }
+
+        .cuisine-option input[type="radio"]:checked + .cuisine-card {
+            border-color: var(--primary);
+            background: #fff0f2;
+            box-shadow: 0 4px 12px rgba(255, 107, 129, 0.1);
+        }
+
+        .cuisine-option input[type="radio"]:checked + .cuisine-card .name {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Submit Button */
+        button.submit-btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 12px rgba(255, 107, 129, 0.2);
+        }
+
+        button.submit-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        button.submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Success Card Styling */
+        .hidden {
+            display: none !important;
+        }
+
+        .success-message {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        .success-emoji {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: heartBeat 1.2s infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.1); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.1); }
+            70% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="mainContainer">
+        <!-- Invitation Form -->
+        <div id="dateForm">
+            <h1>Let's Go on a Date! 🌹</h1>
+            <p class="subtitle">Pick your preferences below, beautiful.</p>
+            
+            <form id="invitationForm" onsubmit="handleSubmit(event)">
+                <!-- Date Picker -->
+                <div class="form-group">
+                    <label for="date">Choose a Day</label>
+                    <input type="date" id="date" required>
+                </div>
+
+                <!-- Time Picker -->
+                <div class="form-group">
+                    <label for="time">Choose a Time</label>
+                    <input type="time" id="time" required>
+                </div>
+
+                <!-- Cuisine Options -->
+                <div class="form-group">
+                    <label>What are you craving?</label>
+                    <div class="cuisine-grid">
+                        
+                        <label class="cuisine-option">
+                            <input type="radio" name="cuisine" value="Japanese Steak" required>
+                            <div class="cuisine-card">
+                                <span class="emoji">🥩</span>
+                                <span class="name">Japanese Steak</span>
+                            </div>
+                        </label>
+
+                        <label class="cuisine-option">
+                            <input type="radio" name="cuisine" value="Ethiopian Food">
+                            <div class="cuisine-card">
+                                <span class="emoji">🫓</span>
+                                <span class="name">Ethiopian Food</span>
+                            </div>
+                        </label>
+
+                        <label class="cuisine-option">
+                            <input type="radio" name="cuisine" value="Middle Eastern">
+                            <div class="cuisine-card">
+                                <span class="emoji">🥙</span>
+                                <span class="name">Middle Eastern</span>
+                            </div>
+                        </label>
+
+                        <label class="cuisine-option">
+                            <input type="radio" name="cuisine" value="Italian">
+                            <div class="cuisine-card">
+                                <span class="emoji">🍝</span>
+                                <span class="name">Italian</span>
+                            </div>
+                        </label>
+
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">Lock It In ❤️</button>
+            </form>
+        </div>
+
+        <!-- Success Message (Initially Hidden) -->
+        <div id="successView" class="success-message hidden">
+            <span class="success-emoji">❤️</span>
+            <h1>It's a Date!</h1>
+            <p class="subtitle" style="margin-top: 15px; font-size: 1.2rem; color: var(--text); font-weight: 500;">
+                You're the best wushima, and I can't wait to see you.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function handleSubmit(event) {
+            event.preventDefault();
+            
+            // You can grab the values here if you want to connect it to an email/Google Sheet later:
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+            const cuisine = document.querySelector('input[name="cuisine"]:checked').value;
+
+            // Simple visual transition
+            document.getElementById('dateForm').classList.add('hidden');
+            document.getElementById('successView').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
