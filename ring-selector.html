@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <title>Help Me Pick the Ring</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:            #FDF6F0;
+      --card-bg:       #FFFFFF;
+      --accent:        #C4796A;
+      --accent-light:  #E8A89C;
+      --accent-dark:   #9D5A4D;
+      --text-dark:     #3D2B2B;
+      --text-mid:      #7A5C5C;
+      --text-light:    #B99999;
+      --border:        #F0DDD8;
+      --selected-bg:   #FFF0ED;
+    }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: var(--bg);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ── Progress Header ── */
+    .progress-header {
+      padding: 16px 20px 12px;
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .step-counter {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .back-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-mid);
+      font-family: 'Lato', sans-serif;
+      font-size: 13px;
+      padding: 4px 8px 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.2s;
+    }
+    .back-btn:hover { color: var(--accent); }
+    .back-btn:disabled { opacity: 0.3; cursor: default; }
+
+    .step-text {
+      font-size: 12px;
+      color: var(--text-light);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .progress-bar-wrap {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--accent-light), var(--accent));
+      border-radius: 2px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── Screens ── */
+    .screen {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      padding: 28px 20px 48px;
+    }
+    .screen.active {
+      display: flex;
+      animation: fadeSlideIn 0.35s ease forwards;
+    }
+    .screen.back-anim {
+      animation: fadeSlideBack 0.35s ease forwards;
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateX(40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideBack {
+      from { opacity: 0; transform: translateX(-40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ── Welcome ── */
+    .welcome-screen {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 60px 32px 60px;
+      min-height: 100vh;
+    }
+
+    .ring-hero { font-size: 72px; margin-bottom: 28px; line-height: 1; }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 600;
+      color: var(--text-dark);
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .divider {
+      color: var(--accent-light);
+      font-size: 16px;
+      letter-spacing: 8px;
+      margin: 16px 0 20px;
+    }
+
+    .welcome-subtitle {
+      font-size: 15px;
+      color: var(--text-mid);
+      line-height: 1.8;
+      margin-bottom: 44px;
+      font-weight: 300;
+      max-width: 320px;
+    }
+
+    h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+      line-height: 1.25;
+    }
+
+    .screen-subtitle {
+      font-size: 14px;
+      color: var(--text-mid);
+      margin-bottom: 28px;
+      line-height: 1.5;
+      font-weight: 300;
+    }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-light), var(--accent));
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 18px 40px;
+      font-size: 16px;
+      font-family: 'Lato', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      width: 100%;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(196,121,106,0.35);
+    }
+    .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(196,121,106,0.4); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-outline {
+      background: none;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      border-radius: 50px;
+      padding: 16px 32px;
+      font-size: 15px;
+      font-family: 'Lato', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+    .btn-outline:hover { background: var(--accent); color: #fff; }
+
+    .btn-ghost {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 8px;
+      font-family: 'Lato', sans-serif;
+      width: 100%;
+    }
+    .btn-ghost:hover { color: var(--text-mid); }
+
+    /* ── Ring Size Screen ── */
+    .size-display {
+      background: var(--card-bg);
+      border: 2px solid var(--accent-light);
+      border-radius: 24px;
+      padding: 40px 32px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 24px rgba(196,121,106,0.12);
+    }
+    .size-number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 88px;
+      font-weight: 300;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .size-label {
+      font-size: 12px;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+    }
+    .size-note {
+      font-size: 13px;
+      color: var(--text-mid);
+      background: #FFF8F6;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    /* ── Option Grid ── */
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    /* Last odd item spans full width */
+    .options-grid .option-card:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+
+    .option-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 12px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      text-align: center;
+      gap: 10px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .option-card:hover {
+      border-color: var(--accent-light);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(196,121,106,0.15);
+    }
+    .option-card:active { transform: translateY(0); }
+    .option-card.selected {
+      border-color: var(--accent);
+      background: var(--selected-bg);
+      box-shadow: 0 4px 16px rgba(196,121,106,0.25);
+    }
+    .option-card.selected .option-name { color: var(--accent-dark); font-weight: 700; }
+
+    /* ── Placeholder Image ── */
+    .placeholder-img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: linear-gradient(135deg, #F8EDE8 0%, #EDD5CD 100%);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .placeholder-img img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+    .placeholder-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-light);
+      text-align: center;
+      padding: 6px;
+      position: relative;
+      z-index: 1;
+      line-height: 1.5;
+    }
+
+    .option-name {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-dark);
+      line-height: 1.25;
+    }
+
+    /* ── Metal Cards ── */
+    .metal-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .metal-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      gap: 18px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .metal-card:hover {
+      border-color: var(--accent-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(196,121,106,0.15);
+    }
+    .metal-card:active { transform: none; }
+    .metal-card.selected {
+      border-color: var(--accent);
+      background: var(--selected-bg);
+    }
+
+    .metal-swatch {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      position: relative;
+    }
+    .metal-swatch-bg {
+      width: 100%;
+      height: 100%;
+    }
+    .metal-swatch img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .metal-info { flex: 1; }
+    .metal-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 2px;
+    }
+    .metal-desc { font-size: 12px; color: var(--text-mid); }
+
+    .check-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 14px;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+    .metal-card.selected .check-icon { display: flex; }
+
+    /* ── Gold Color Grid ── */
+    .gold-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .gold-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      padding: 18px 10px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      gap: 12px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .gold-card:hover {
+      border-color: var(--accent-light);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(196,121,106,0.15);
+    }
+    .gold-card:active { transform: none; }
+    .gold-card.selected {
+      border-color: var(--accent);
+      background: var(--selected-bg);
+    }
+    .gold-card.selected .gold-name { color: var(--accent-dark); font-weight: 700; }
+
+    .gold-swatch {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .gold-swatch-bg { width: 100%; height: 100%; }
+    .gold-swatch img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+    .gold-name { font-size: 12px; color: var(--text-dark); line-height: 1.3; }
+
+    /* ── Summary Screen ── */
+    .summary-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 28px 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(196,121,106,0.12);
+      border: 1px solid var(--border);
+    }
+    .summary-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--accent);
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      letter-spacing: 1px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 16px;
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-label {
+      font-size: 11px;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      flex-shrink: 0;
+    }
+    .summary-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-dark);
+      text-align: right;
+    }
+
+    .summary-hero { text-align: center; font-size: 52px; margin-bottom: 16px; }
+
+    .copy-box {
+      background: #FFF8F6;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      font-size: 13px;
+      color: var(--text-mid);
+      line-height: 1.9;
+      margin-bottom: 16px;
+      white-space: pre-wrap;
+      font-family: 'Lato', sans-serif;
+    }
+
+    /* ── Utility ── */
+    .continue-wrap { margin-top: auto; padding-top: 16px; }
+
+    @media (max-width: 360px) {
+      h1 { font-size: 30px; }
+      h2 { font-size: 24px; }
+      .size-number { font-size: 72px; }
+      .gold-swatch { width: 52px; height: 52px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
+
+  <!-- ══ Progress Header ══ -->
+  <div class="progress-header" id="progressHeader" style="display:none">
+    <div class="step-counter">
+      <button class="back-btn" id="backBtn" onclick="goBack()">&#8592; Back</button>
+      <span class="step-text" id="stepText">Step 1 of 6</span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- ══ Screen 0 · Welcome ══ -->
+  <div class="screen welcome-screen active" id="screen-welcome">
+    <div class="ring-hero">💍</div>
+    <h1>Help Me Pick<br>the Ring</h1>
+    <div class="divider">✦ ✦ ✦</div>
+    <p class="welcome-subtitle">
+      You're just a few steps away from finding the perfect engagement ring.<br><br>
+      Answer one question at a time and we'll put together her ideal ring together.
+    </p>
+    <button class="btn-primary" onclick="goToStep('ringSize')">Let's Begin ✨</button>
+  </div>
+
+  <!-- ══ Screen 1 · Ring Size ══ -->
+  <div class="screen" id="screen-ringSize">
+    <h2>Ring Size</h2>
+    <p class="screen-subtitle">Her size has already been confirmed — no guesswork needed.</p>
+    <div class="size-display">
+      <div class="size-number">5</div>
+      <div class="size-label">US Ring Size</div>
+    </div>
+    <div class="size-note">✓ Her size is set to 5. This is locked in and ready to go.</div>
+    <div class="continue-wrap">
+      <button class="btn-primary" onclick="goToStep('diamondShape')">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══ Screen 2 · Diamond Shape ══ -->
+  <div class="screen" id="screen-diamondShape">
+    <h2>Diamond Shape</h2>
+    <p class="screen-subtitle">Choose the cut that speaks to her personality.</p>
+    <div class="options-grid" id="shapeGrid"></div>
+    <div class="continue-wrap">
+      <button class="btn-primary" id="shapeNext" onclick="goToStep('diamondSize')" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══ Screen 3 · Diamond Size ══ -->
+  <div class="screen" id="screen-diamondSize">
+    <h2>Diamond Size</h2>
+    <p class="screen-subtitle">How much sparkle? Pick the carat weight.</p>
+    <div class="options-grid" id="caratGrid"></div>
+    <div class="continue-wrap">
+      <button class="btn-primary" id="caratNext" onclick="goToStep('bandMetal')" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══ Screen 4 · Band Metal ══ -->
+  <div class="screen" id="screen-bandMetal">
+    <h2>Band Metal</h2>
+    <p class="screen-subtitle">What metal feels right for her ring?</p>
+    <div class="metal-grid" id="metalGrid"></div>
+    <div class="continue-wrap">
+      <button class="btn-primary" id="metalNext" onclick="metalContinue()" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══ Screen 4b · Gold Color (conditional) ══ -->
+  <div class="screen" id="screen-goldColor">
+    <h2>Gold Color</h2>
+    <p class="screen-subtitle">Which shade of gold feels most like her?</p>
+    <div class="gold-grid" id="goldGrid"></div>
+    <div class="continue-wrap">
+      <button class="btn-primary" id="goldNext" onclick="goToStep('ringBox')" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══ Screen 5 · Ring Box ══ -->
+  <div class="screen" id="screen-ringBox">
+    <h2>Ring Box</h2>
+    <p class="screen-subtitle">The moment she opens this box will be unforgettable.</p>
+    <div class="options-grid" id="boxGrid"></div>
+    <div class="continue-wrap">
+      <button class="btn-primary" id="boxNext" onclick="goToStep('summary')" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══ Screen 6 · Summary ══ -->
+  <div class="screen" id="screen-summary">
+    <div class="summary-hero">💍</div>
+    <h2 style="text-align:center;margin-bottom:6px">Her Perfect Ring</h2>
+    <p class="screen-subtitle" style="text-align:center;margin-bottom:24px">Here's everything you've chosen.</p>
+
+    <div class="summary-card" id="summaryCard"></div>
+
+    <p style="font-size:12px;color:var(--text-light);margin-bottom:8px;text-align:center;letter-spacing:.5px">YOUR SELECTIONS · TAP TO COPY</p>
+    <div class="copy-box" id="copyBox" onclick="copyToClipboard()" style="cursor:pointer" title="Tap to copy"></div>
+
+    <button class="btn-primary" onclick="copyToClipboard()" id="copyBtn" style="margin-bottom:12px">Copy My Choices</button>
+    <button class="btn-ghost" onclick="restart()">Start Over</button>
+  </div>
+
+</div><!-- /app-container -->
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────
+  const state = {
+    ringSize:     5,
+    diamondShape: null,
+    diamondSize:  null,
+    bandMetal:    null,
+    goldColor:    null,
+    ringBox:      null
+  };
+
+  const navHistory = [];
+  let currentScreen = 'welcome';
+
+  // ── Data ───────────────────────────────────────────────────────────────
+  const SHAPES = [
+    { id: 'round',    name: 'Round',    img: 'images/shape-round.jpg' },
+    { id: 'oval',     name: 'Oval',     img: 'images/shape-oval.jpg' },
+    { id: 'princess', name: 'Princess', img: 'images/shape-princess.jpg' },
+    { id: 'cushion',  name: 'Cushion',  img: 'images/shape-cushion.jpg' },
+    { id: 'emerald',  name: 'Emerald',  img: 'images/shape-emerald.jpg' },
+    { id: 'pear',     name: 'Pear',     img: 'images/shape-pear.jpg' },
+    { id: 'marquise', name: 'Marquise', img: 'images/shape-marquise.jpg' }
+  ];
+
+  const CARATS = [
+    { id: 'c050', name: '0.5 ct',  img: 'images/carat-050.jpg' },
+    { id: 'c075', name: '0.75 ct', img: 'images/carat-075.jpg' },
+    { id: 'c100', name: '1.0 ct',  img: 'images/carat-100.jpg' },
+    { id: 'c125', name: '1.25 ct', img: 'images/carat-125.jpg' },
+    { id: 'c150', name: '1.5 ct',  img: 'images/carat-150.jpg' },
+    { id: 'c200', name: '2.0 ct',  img: 'images/carat-200.jpg' }
+  ];
+
+  const METALS = [
+    {
+      id: 'silver', name: 'Silver',
+      desc: 'Cool, timeless, modern',
+      swatch: 'linear-gradient(135deg,#F5F5F5,#9A9A9A)',
+      img: 'images/metal-silver.jpg'
+    },
+    {
+      id: 'gold', name: 'Gold',
+      desc: 'Warm, classic, luxurious',
+      swatch: 'linear-gradient(135deg,#F5D98B,#C49A30)',
+      img: 'images/metal-gold.jpg'
+    }
+  ];
+
+  const GOLD_COLORS = [
+    { id: 'rose',   name: 'Rose Gold',   swatch: 'linear-gradient(135deg,#EAA898,#C47A6A)', img: 'images/metal-rose-gold.jpg' },
+    { id: 'yellow', name: 'Yellow Gold', swatch: 'linear-gradient(135deg,#F5D98B,#C49A30)', img: 'images/metal-yellow-gold.jpg' },
+    { id: 'white',  name: 'White Gold',  swatch: 'linear-gradient(135deg,#EBEBEB,#AEAEAE)', img: 'images/metal-white-gold.jpg' }
+  ];
+
+  const BOXES = [
+    { id: 'classic', name: 'Classic Velvet', img: 'images/box-classic.jpg' },
+    { id: 'modern',  name: 'Modern Matte',   img: 'images/box-modern.jpg' },
+    { id: 'vintage', name: 'Vintage',         img: 'images/box-vintage.jpg' }
+  ];
+
+  // Step numbers for progress bar (gold = same as bandMetal = 4)
+  const STEP_NUMBERS = {
+    welcome: 0, ringSize: 1, diamondShape: 2, diamondSize: 3,
+    bandMetal: 4, goldColor: 4, ringBox: 5, summary: 6
+  };
+  const TOTAL_STEPS = 6;
+
+  // ── Navigation ─────────────────────────────────────────────────────────
+  function goToStep(name, back) {
+    if (name === 'welcome') {
+      restart();
+      return;
+    }
+
+    if (!back && currentScreen !== 'welcome') {
+      navHistory.push(currentScreen);
+    }
+
+    const oldEl = document.getElementById('screen-' + currentScreen);
+    const newEl = document.getElementById('screen-' + name);
+
+    oldEl.classList.remove('active', 'back-anim');
+    newEl.classList.remove('back-anim');
+    if (back) newEl.classList.add('back-anim');
+
+    currentScreen = name;
+    newEl.classList.add('active');
+    window.scrollTo(0, 0);
+
+    updateHeader();
+    buildScreen(name);
+  }
+
+  function goBack() {
+    if (navHistory.length === 0) return;
+    const prev = navHistory.pop();
+    goToStep(prev, true);
+  }
+
+  function metalContinue() {
+    if (state.bandMetal === 'gold') {
+      goToStep('goldColor');
+    } else {
+      state.goldColor = null;
+      goToStep('ringBox');
+    }
+  }
+
+  function restart() {
+    state.diamondShape = null;
+    state.diamondSize  = null;
+    state.bandMetal    = null;
+    state.goldColor    = null;
+    state.ringBox      = null;
+    navHistory.length  = 0;
+
+    const oldEl = document.getElementById('screen-' + currentScreen);
+    const newEl = document.getElementById('screen-welcome');
+    oldEl.classList.remove('active', 'back-anim');
+    newEl.classList.remove('back-anim');
+    newEl.classList.add('back-anim');
+    currentScreen = 'welcome';
+    newEl.classList.add('active');
+    document.getElementById('progressHeader').style.display = 'none';
+    window.scrollTo(0, 0);
+  }
+
+  function updateHeader() {
+    const header = document.getElementById('progressHeader');
+    if (currentScreen === 'welcome') { header.style.display = 'none'; return; }
+
+    header.style.display = 'block';
+    const step = STEP_NUMBERS[currentScreen];
+    const label = currentScreen === 'goldColor'
+      ? 'Step 4 of 6 · Gold Color'
+      : `Step ${step} of ${TOTAL_STEPS}`;
+
+    document.getElementById('stepText').textContent = label;
+    document.getElementById('progressFill').style.width = ((step / TOTAL_STEPS) * 100) + '%';
+    document.getElementById('backBtn').disabled = navHistory.length === 0;
+  }
+
+  // ── Screen Builders ────────────────────────────────────────────────────
+  function buildScreen(name) {
+    if (name === 'diamondShape') buildShapeGrid();
+    if (name === 'diamondSize')  buildCaratGrid();
+    if (name === 'bandMetal')    buildMetalGrid();
+    if (name === 'goldColor')    buildGoldGrid();
+    if (name === 'ringBox')      buildBoxGrid();
+    if (name === 'summary')      buildSummary();
+  }
+
+  function imgTag(src, alt) {
+    return `<img src="${src}" alt="${alt}" onerror="this.style.display='none'">`;
+  }
+
+  function placeholderDiv(src, label) {
+    return `<div class="placeholder-img">
+      ${imgTag(src, label)}
+      <span class="placeholder-label">${label}<br>image</span>
+    </div>`;
+  }
+
+  function buildShapeGrid() {
+    document.getElementById('shapeGrid').innerHTML = SHAPES.map(s => `
+      <div class="option-card${state.diamondShape === s.id ? ' selected' : ''}"
+           onclick="pick('diamondShape','${s.id}','shapeNext','shapeGrid',SHAPES)">
+        ${placeholderDiv(s.img, s.name)}
+        <div class="option-name">${s.name}</div>
+      </div>`).join('');
+    document.getElementById('shapeNext').disabled = !state.diamondShape;
+  }
+
+  function buildCaratGrid() {
+    document.getElementById('caratGrid').innerHTML = CARATS.map(c => `
+      <div class="option-card${state.diamondSize === c.id ? ' selected' : ''}"
+           onclick="pick('diamondSize','${c.id}','caratNext','caratGrid',CARATS)">
+        ${placeholderDiv(c.img, c.name)}
+        <div class="option-name">${c.name}</div>
+      </div>`).join('');
+    document.getElementById('caratNext').disabled = !state.diamondSize;
+  }
+
+  function buildMetalGrid() {
+    document.getElementById('metalGrid').innerHTML = METALS.map(m => `
+      <div class="metal-card${state.bandMetal === m.id ? ' selected' : ''}"
+           onclick="selectMetal('${m.id}')">
+        <div class="metal-swatch">
+          <div class="metal-swatch-bg" style="background:${m.swatch}"></div>
+          ${imgTag(m.img, m.name)}
+        </div>
+        <div class="metal-info">
+          <div class="metal-name">${m.name}</div>
+          <div class="metal-desc">${m.desc}</div>
+        </div>
+        <div class="check-icon">✓</div>
+      </div>`).join('');
+    document.getElementById('metalNext').disabled = !state.bandMetal;
+  }
+
+  function buildGoldGrid() {
+    document.getElementById('goldGrid').innerHTML = GOLD_COLORS.map(g => `
+      <div class="gold-card${state.goldColor === g.id ? ' selected' : ''}"
+           onclick="selectGold('${g.id}')">
+        <div class="gold-swatch">
+          <div class="gold-swatch-bg" style="background:${g.swatch}"></div>
+          ${imgTag(g.img, g.name)}
+        </div>
+        <div class="gold-name">${g.name}</div>
+      </div>`).join('');
+    document.getElementById('goldNext').disabled = !state.goldColor;
+  }
+
+  function buildBoxGrid() {
+    document.getElementById('boxGrid').innerHTML = BOXES.map(b => `
+      <div class="option-card${state.ringBox === b.id ? ' selected' : ''}"
+           onclick="pick('ringBox','${b.id}','boxNext','boxGrid',BOXES)">
+        ${placeholderDiv(b.img, b.name)}
+        <div class="option-name">${b.name}</div>
+      </div>`).join('');
+    document.getElementById('boxNext').disabled = !state.ringBox;
+  }
+
+  // Generic picker for option-card grids
+  function pick(stateKey, id, nextBtnId, gridId, dataset) {
+    state[stateKey] = id;
+    const grid = document.getElementById(gridId);
+    grid.querySelectorAll('.option-card').forEach((card, i) => {
+      card.classList.toggle('selected', dataset[i].id === id);
+      card.querySelector('.option-name').style.fontWeight = dataset[i].id === id ? '700' : '400';
+      card.querySelector('.option-name').style.color = dataset[i].id === id ? 'var(--accent-dark)' : '';
+    });
+    document.getElementById(nextBtnId).disabled = false;
+  }
+
+  function selectMetal(id) {
+    state.bandMetal = id;
+    if (id === 'silver') state.goldColor = null;
+    buildMetalGrid();
+  }
+
+  function selectGold(id) {
+    state.goldColor = id;
+    buildGoldGrid();
+  }
+
+  // ── Summary ────────────────────────────────────────────────────────────
+  function buildSummary() {
+    const shapeName = SHAPES.find(s => s.id === state.diamondShape)?.name ?? '—';
+    const caratName = CARATS.find(c => c.id === state.diamondSize)?.name  ?? '—';
+    const metalName = state.bandMetal === 'gold'
+      ? (GOLD_COLORS.find(g => g.id === state.goldColor)?.name ?? 'Gold')
+      : 'Silver';
+    const boxName = BOXES.find(b => b.id === state.ringBox)?.name ?? '—';
+
+    document.getElementById('summaryCard').innerHTML = `
+      <div class="summary-title">✦ Your Selections ✦</div>
+      <div class="summary-row">
+        <span class="summary-label">Ring Size</span>
+        <span class="summary-value">US 5</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Diamond Shape</span>
+        <span class="summary-value">${shapeName}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Diamond Size</span>
+        <span class="summary-value">${caratName}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Band Metal</span>
+        <span class="summary-value">${metalName}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Ring Box</span>
+        <span class="summary-value">${boxName}</span>
+      </div>`;
+
+    const line = '─'.repeat(30);
+    document.getElementById('copyBox').textContent =
+      `Ring Selection\n${line}\nRing Size:      US 5\nDiamond Shape:  ${shapeName}\nDiamond Size:   ${caratName}\nBand Metal:     ${metalName}\nRing Box:       ${boxName}`;
+  }
+
+  function copyToClipboard() {
+    const text = document.getElementById('copyBox').textContent;
+    const btn = document.getElementById('copyBtn');
+
+    const succeed = () => {
+      btn.textContent = 'Copied! ✓';
+      setTimeout(() => { btn.textContent = 'Copy My Choices'; }, 2200);
+    };
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(succeed).catch(fallback);
+    } else {
+      fallback();
+    }
+
+    function fallback() {
+      const ta = Object.assign(document.createElement('textarea'), {
+        value: text, style: 'position:fixed;opacity:0'
+      });
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      try { document.execCommand('copy'); succeed(); } catch(e) {}
+      document.body.removeChild(ta);
+    }
+  }
+</script>
+</body>
+</html>
